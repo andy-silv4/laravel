@@ -4,7 +4,7 @@ services:
         container_name: php-fpm
         build: ./.docker/php-fpm
         restart: always
-        entrypoint: dockerize -template ./.docker/php-fpm/.env:.env -wait tcp://db:3306 -timeout 30s ./.docker/entrypoint.sh
+        entrypoint: dockerize -template ./.docker/php-fpm/.env.tmpl:.env -wait tcp://db:3306 -timeout 30s ./.docker/entrypoint.sh
         environment:
             - DB_HOST=db
             - DB_PORT=3306
