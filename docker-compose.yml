@@ -1,11 +1,21 @@
 version: '3'
 services:
-    app:
-        container_name: app
+    php-fpm:
+        container_name: php-fpm
         build: ./.docker/php-fpm
         restart: always
+        entrypoint: dockerize -template ./.docker/php-fpm/.env:.env -wait tcp://db:3306 -timeout 30s ./.docker/entrypoint.sh
+        environment:
+            - DB_HOST=db
+            - DB_PORT=3306
+            - DB_DATABASE=laravel
+            - DB_USERNAME=root
+            - DB_PASSWORD=root
         volumes:
             - .:/var/www
+        depends_on:
+            - db
+            - redis
         networks:
             - app-network
     
@@ -13,10 +23,17 @@ services:
         container_name: nginx
         build: ./.docker/nginx
         restart: always
+        entrypoint: dockerize -template /var/www/.docker/nginx/nginx.tmpl:/etc/nginx/conf.d/nginx.conf
+        environment:
+            - HOST=php-fpm
+            - PORT=9000
+        command: ["nginx", "-g", "daemon off;"]
         volumes:
             - .:/var/www
         ports:
             - "8000:80"
+        depends_on:
+            - php-fpm
         networks:
             - app-network
 
